@@ -11,7 +11,7 @@ jobs:
           command: echo $ARM_CLIENT_ID
       - run:
           name: Validate base
-          command: packer validate -var 'client_id=$ARM_CLIENT_ID' -var 'client_secret=$ARM_CLIENT_SECRET' -var 'subscription_id=$ARM_SUBSCRIPTION_ID' -var "tenant_id=$ARM_TENANT_ID" -var "resource_group_name=$RESOURCE_GROUP_NAME" ./packer/build.json
+          command: packer validate -var 'client_id=$ARM_CLIENT_ID' -var 'client_secret=$ARM_CLIENT_SECRET' -var 'subscription_id=$ARM_SUBSCRIPTION_ID' -var "tenant_id=$ARM_TENANT_ID" -var "resource_group_name=$RESOURCE_GROUP_NAME" -var "working_dir=$CIRCLE_WORKING_DIRECTORY/packer/" ./packer/build.json
   build-base:
     docker:
       - image: hashicorp/packer:1.3.2
