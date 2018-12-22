@@ -22,7 +22,7 @@ jobs:
           at: ~/packer
       - run:
           name: Build base
-          command: echo ./scripts/build.sh base ./packer/build.json
+          command: echo ./scripts/build.sh base ./packer/build.json --var "client_id=$ARM_CLIENT_ID"
           no_output_timeout: 30m
       - persist_to_workspace:
           root: .
