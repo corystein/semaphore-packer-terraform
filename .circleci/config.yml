@@ -15,18 +15,10 @@ jobs:
     working_directory: $CIRCLE_PROJECT_REPONAME
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/packer
       - run:
-          name: Build base
+          name: Build Packer
           command: packer build -var 'client_id=$ARM_CLIENT_ID' -var 'client_secret=$ARM_CLIENT_SECRET' -var 'subscription_id=$ARM_SUBSCRIPTION_ID' -var "tenant_id=$ARM_TENANT_ID" -var "resource_group_name=$RESOURCE_GROUP_NAME" -var "working_dir=./packer/" ./packer/build.json
           no_output_timeout: 30m
-      - persist_to_workspace:
-          root: .
-          paths:
-            - manifest-base.json
-      - store_artifacts:
-          path: manifest-base.json
 workflows:
   version: 2
   build-and-deploy:
