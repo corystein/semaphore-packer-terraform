@@ -1,0 +1,127 @@
+{
+    "variables": {
+        "client_id": "",
+        "client_secret": "",
+        "subscription_id": "",
+        "tenant_id": "",
+
+        "resource_group_name": "",
+
+        "packer_build_version": "NA",
+        "image_prefix": "packer-semaphore-image-dev",
+        "version": "0.0.0",
+
+        "working_dir": "./"
+    },
+    "builders": [{
+        "name": "Semaphore Packer Image - Dev",
+        "type": "azure-arm",
+
+        "client_id": "{{user `client_id`}}",
+        "client_secret": "{{user `client_secret`}}",
+        "subscription_id": "{{user `subscription_id`}}",
+        "tenant_id": "{{user `tenant_id`}}",
+
+        "build_resource_group_name": "{{user `resource_group_name`}}",
+        "managed_image_resource_group_name": "{{user `resource_group_name`}}",
+        "managed_image_name": "{{user `image_prefix`}}-{{isotime \"2006-01-02T1504\"}}",
+
+        "vm_size": "Standard_DS2_v2",
+        "os_type": "Linux",
+        "image_publisher": "OpenLogic",
+        "image_offer": "CentOS",
+        "image_sku": "7.5",
+        "image_version": "latest",
+
+        "os_disk_size_gb": 128,
+
+
+        "azure_tags": {
+            "product": "PTFE Packer Image - Dev",
+            "node_info": "PTFE Image - CentOS 7.5",
+            "source": "Packer Image",
+            "packer_build_version": "{{user `packer_build_version`}}",
+            "create_time": "{{isotime \"2006-01-02T1504\"}}",
+            "version": "{{user `version`}}"
+        }
+
+    }],
+    "provisioners": [{
+            "type": "file",
+            "source": "{{user `working_dir`}}files/expand_vm_disk.sh",
+            "destination": "/tmp/expand_vm_disk.sh"
+        },
+        {
+            "type": "shell",
+            "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+            "inline": [
+                "chmod 777 /tmp/*.sh",
+                "yum install dos2unix -y",
+                "dos2unix /tmp/*.*sh",
+                "/tmp/expand_vm_disk.sh"
+            ],
+            "expect_disconnect": true
+        },
+        {
+            "type": "shell",
+            "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+            "inline": [
+                "df -h",
+                "xfs_growfs -d /dev/sda2",
+                "df -h"
+            ]
+        },
+        {
+            "type": "shell",
+            "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+            "inline": [
+                "echo Create install folder...",
+                "mkdir /install",
+                "chmod 777 /install",
+                "echo Completed creating install folder"
+            ]
+        },
+        {
+            "type": "file",
+            "source": "{{user `working_dir`}}files/",
+            "destination": "/install"
+        },
+        {
+            "type": "shell",
+            "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+            "inline": [
+                "sudo chmod -R 775 /install/",
+                "yum install dos2unix -y",
+                "dos2unix /install/*.*sh",
+                "rpm -i https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm",
+                "yum install ansible -y"
+            ]
+        },
+        {
+            "type": "shell",
+            "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+            "inline": [
+                "ansible-playbook /install/install_semaphore.yml"
+            ]
+        },
+        {
+            "type": "shell",
+            "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+            "inline": [
+                "uname -mr",
+                "yum install -y nmap",
+                "yum install -y deltarpm",
+                "yum update -y"
+            ]
+        },
+        {
+            "type": "shell",
+            "execute_command": "{{ .Vars }} sudo -S -E sh '{{ .Path }}'",
+            "inline": [
+                "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"
+            ],
+            "inline_shebang": "/bin/sh -x",
+            "skip_clean": true
+        }
+    ]
+}
