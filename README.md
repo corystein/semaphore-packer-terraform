@@ -1,7 +1,7 @@
 # Ansible Semaphore Packer/Terraform Deployment Scripts
 
-[![CircleCI](https://circleci.com/gh/corystein/semaphore-packer-terraform.svg?style=svg)](https://circleci.com/gh/corystein/semaphore-packer-terraform){:target="\_blank"}
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2c2458413a574197b8cb1a787774761b)](https://www.codacy.com/app/corystein/semaphore-packer-terraform?utm_source=github.com&utm_medium=referral&utm_content=corystein/semaphore-packer-terraform&utm_campaign=Badge_Grade){:target="\_blank"}
+[![CircleCI](https://circleci.com/gh/corystein/semaphore-packer-terraform.svg?style=svg)](https://circleci.com/gh/corystein/semaphore-packer-terraform)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2c2458413a574197b8cb1a787774761b)](https://www.codacy.com/app/corystein/semaphore-packer-terraform?utm_source=github.com&utm_medium=referral&utm_content=corystein/semaphore-packer-terraform&utm_campaign=Badge_Grade)
 
 ## Links
 
