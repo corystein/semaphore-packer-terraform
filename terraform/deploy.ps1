@@ -140,7 +140,7 @@ function main() {
         Write-Warning "Logging into Azure using Tfvars info"
         az login --service-principal -u "$($client_id)" -p "$($client_secret)" --tenant "$($tenant_id)" --subscription $subscription_id
         if ($LASTEXITCODE -ne 0) { throw "Failure logging in to Azure"}
-        Write-Host "Successfully logged into Azure" -ForegroundColor Green
+        Write-Output "Successfully logged into Azure" #-ForegroundColor Green
 
         az account set --subscription $subscription_id
 
@@ -161,17 +161,17 @@ function main() {
         $Account = $azureRmContext.user.name
         $SubscriptionId = $azureRmContext.id
         $SubscriptionName = $azureRmContext.name
-        Write-Host "Account: ............................ [$($Account)]"
-        Write-Host "Tenant Id: .......................... [$($TenantId)]"
-        Write-Host "Subscription Id: .................... [$($SubscriptionId)]"    
-        Write-Host "Subscription Name: .................. [$($SubscriptionName)]"  
-        Write-Host "Remove Before Install: .............. [$($RemoveBeforeInstall)]" 
-        Write-Host "Destroy: ............................ [$($Destroy)]" 
-        Write-Host "Use Tfvars File: .................... [$($UseTfVarsFile)]" 
-        Write-Host "Use Provider Tfvars File: ........... [$($UseProviderTfVarsFile)]" 
-        Write-Host "Provider Tfvars File: ............... [$($ProviderTfVarsFile)]" 
-        Write-Host "Tfvars File: ........................ [$($TfVarsFile)]" 
-        Write-Host "Verify Only: ........................ [$($VerifyOnly)]" 
+        Write-Output "Account: ............................ [$($Account)]"
+        Write-Output "Tenant Id: .......................... [$($TenantId)]"
+        Write-Output "Subscription Id: .................... [$($SubscriptionId)]"    
+        Write-Output "Subscription Name: .................. [$($SubscriptionName)]"  
+        Write-Output "Remove Before Install: .............. [$($RemoveBeforeInstall)]" 
+        Write-Output "Destroy: ............................ [$($Destroy)]" 
+        Write-Output "Use Tfvars File: .................... [$($UseTfVarsFile)]" 
+        Write-Output "Use Provider Tfvars File: ........... [$($UseProviderTfVarsFile)]" 
+        Write-Output "Provider Tfvars File: ............... [$($ProviderTfVarsFile)]" 
+        Write-Output "Tfvars File: ........................ [$($TfVarsFile)]" 
+        Write-Output "Verify Only: ........................ [$($VerifyOnly)]" 
         ###################################################################
 
 
@@ -234,7 +234,7 @@ tenant_id = "$($Env:tenant_id)"
         # Display execution duration
         $BuildTime.Stop()
         $TimeOutput = $BuildTime.Elapsed
-        Write-Host "Total build time: [$($TimeOutput.Minutes)m $($TimeOutput.Seconds)s]"
+        Write-Output "Total build time: [$($TimeOutput.Minutes)m $($TimeOutput.Seconds)s]"
     }
     catch {
         Write-Error $_.Exception.Message
