@@ -12,9 +12,7 @@
 
 
 .LINK
-    https://github.com/PowerShell/PowerShell
-    https://www.packer.io/
-    https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
+    https://docs.microsoft.com/en-us/cli/azure/image?view=azure-cli-latest#az-image-delete
 
 .NOTES
 
@@ -29,6 +27,8 @@
 
 
 param(
+    [string] $SubscriptionId,
+    [string] $ResourceGroup = "PZI-GXUS-G-RGP-PADM-P001"
 )
 
 ###################################################################################
@@ -56,10 +56,12 @@ if ([String]::IsNullOrWhiteSpace($(Get-Command az -ErrorAction SilentlyContinue 
 function main() {
     try {
 
-        $azureRmContext = $(az account show) | ConvertFrom-Json
-        $SubscriptionId = $azureRmContext.id
+        if ([String]::IsNullOrWhiteSpace($SubscriptionId)) {
+            $azureRmContext = $(az account show) | ConvertFrom-Json
+            $SubscriptionId = $azureRmContext.id
+        }
         #Write-Output "Subscription Id: .................... [$($SubscriptionId)]"    
-        $result = az image list --resource-group "PZI-GXUS-G-RGP-PADM-P001" --subscription "$($SubscriptionId)" | ConvertFrom-Json
+        $result = az image list --resource-group $ResourceGroup --subscription "$($SubscriptionId)" | ConvertFrom-Json
 
         if ($result.Count -gt 0) {
             [int]$Deleted = 0
@@ -68,6 +70,9 @@ function main() {
                 $StartDate = (GET-DATE)
 
                 $EndDate = $_.tags.create_time
+                Write-Verbose "Start Date: [$StartDate]"
+                Write-Verbose "End Date: [$EndDate]"
+
                 #$EndDate
                 $EndDateParts = $EndDate.Split("-")
                 #$EndDateParts
@@ -83,8 +88,8 @@ function main() {
                 if ($ts.Days -le -7) {
                     Write-Warning "Image older than 7 days"
                     Write-Output "Deleting [$($_.name)]..."
-                    az image delete --name "$($_.name)" --resource-group "PZI-GXUS-G-RGP-PADM-P001" --subscription "$($SubscriptionId)"
-                    $Deleted ++
+                    az image delete --name "$($_.name)" --resource-group $ResourceGroup --subscription "$($SubscriptionId)"
+                    $Deleted++
                 }
 
                 if ($Deleted -gt 0) {

@@ -6,10 +6,17 @@
 ## Links
 
 - [Releases](https://github.com/corystein/semaphore-packer-terraform/releases)
+- [Ansible Semaphore](https://github.com/ansible-semaphore/semaphore)
 
 ## Introduction
 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project.
+This project includes script to deploy Ansible Semaphore using Packer and Terraform. Packer script deploys the latest Ansible Semaphore into a single VM image.
+
+## Packer Image
+
+- Provider: Azure
+- OS: Linux CentOS 7.5
+- Ansible Semaphore: v2.5.1
 
 ## Getting Started
 
@@ -34,7 +41,7 @@ Please follow the [contribution](https://github.com/ansible-semaphore/semaphore/
 
 The MIT License (MIT)
 
-Copyright (c) 2018 Cory Stein
+Copyright (c) 2019 Cory Stein
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
