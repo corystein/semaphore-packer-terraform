@@ -19,6 +19,23 @@ jobs:
           name: Build Packer
           command: packer build -var "client_id=$ARM_CLIENT_ID" -var "client_secret=$ARM_CLIENT_SECRET" -var "subscription_id=$ARM_SUBSCRIPTION_ID" -var "tenant_id=$ARM_TENANT_ID" -var "resource_group_name=$RESOURCE_GROUP_NAME" -var "working_dir=./packer/" ./packer/build.json
           no_output_timeout: 30m
+  packer-cleanup:
+    docker:
+      - image: microsoft/powershell
+    working_directory: $CIRCLE_PROJECT_REPONAME
+    steps:
+      - checkout
+      - run:
+          name: AZ CLI
+          command: az --version
+          no_output_timeout: 30m
+      - run:
+          name: AZ login
+          command: az login --service-principal -u "$ARM_CLIENT_ID" -p "$ARM_CLIENT_SECRET"" --tenant "$ARM_TENANT_ID" --subscription $ARM_SUBSCRIPTION_ID
+      - run:
+          name: Clean Up Packer
+          command: pwsh
+          no_output_timeout: 30m
 workflows:
   version: 2
   build-and-deploy:
@@ -27,3 +44,7 @@ workflows:
       - build-base:
           requires:
             - validate
+      - packer-cleanup:
+          requires:
+            - validate
+            - build-base
