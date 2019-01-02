@@ -70,9 +70,9 @@ function main() {
         ###################################################################
         # Input Values (Script Parameters)
         ###################################################################
-        Write-Host "Working Directory .......................... [$WorkingDirectory]" 
-        Write-Host "File ....................................... [$File]" 
-        Write-Host "Variables File: ............................ [$VariablesFile]" 
+        Write-Output "Working Directory .......................... [$WorkingDirectory]" 
+        Write-Output "File ....................................... [$File]" 
+        Write-Output "Variables File: ............................ [$VariablesFile]" 
         ###################################################################
 
         # Get version
@@ -82,14 +82,14 @@ function main() {
             $version = "{0}.{1}.{2}" -f $($data.Major), $($data.Minor), $($data.Patch)
 
         }
-        Write-Host "Version: ................................... [$version]"
+        Write-Output "Version: ................................... [$version]"
 
         # Check if using variables file
         $VariablesFileExist = $false
         if (Test-Path $VariablesFile) {
             $VariablesFileExist = $true
         }
-        Write-Host "Variables File Exist: ...................... [$VariablesFileExist]"
+        Write-Output "Variables File Exist: ...................... [$VariablesFileExist]"
 
 
         ###################################################################
@@ -105,7 +105,7 @@ function main() {
 
 
         # Used to validate the syntax of the packer files
-        Write-Host "Validating Packer Script..." -ForegroundColor Cyan
+        Write-Output "Validating Packer Script..." #-ForegroundColor Cyan
         if (-not($VariablesFileExist)) {
             packer validate $File
         }
@@ -113,10 +113,10 @@ function main() {
             packer validate --var-file=$VariablesFile $File
         }
         if ($LASTEXITCODE -ne 0) { throw "Failure validating packer files"}
-        Write-Host "Successfully Validated Packer Script" -ForegroundColor Green
+        Write-Output "Successfully Validated Packer Script" #-ForegroundColor Green
 
         # Execute packer build
-        Write-Host "Build using Packer..." -ForegroundColor Cyan
+        Write-Output "Build using Packer..." #-ForegroundColor Cyan
         if (-not($VariablesFileExist)) {
             packer build $File
         }
@@ -134,7 +134,7 @@ function main() {
         # Display execution duration
         $BuildTime.Stop()
         $TimeOutput = $BuildTime.Elapsed
-        Write-Host "Total build time: [$($TimeOutput.Minutes)m $($TimeOutput.Seconds)s]"
+        Write-Output "Total build time: [$($TimeOutput.Minutes)m $($TimeOutput.Seconds)s]"
     }
     catch {
         Write-Error $_.Exception.Message
