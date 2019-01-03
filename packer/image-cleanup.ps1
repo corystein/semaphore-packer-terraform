@@ -64,6 +64,15 @@ function main() {
             $SubscriptionId = $azureRmContext.id
         }
 
+        ###################################################################
+        # Input Values
+        ###################################################################
+        Write-Output "Subscription Id: ......................... [$($SubscriptionId)]"
+        Write-Output "Resource Group Name: ..................... [$($ResourceGroup)]"
+        Write-Output "Days To Delete: .......................... [$($DaysToDelete)]"
+        Write-Output "Keep Only Latest: ........................ [$($KeepOnlyLatest)]" 
+        ###################################################################
+
         # Get list of images from resource group
         $result = az image list --resource-group $ResourceGroup --subscription "$($SubscriptionId)" | ConvertFrom-Json
 
@@ -138,6 +147,9 @@ function main() {
         if ($Deleted -gt 0) {
             Write-Warning "Deleted [$Deleted] images"
             Write-Output "Completed deleting images"
+        }
+        else {
+            Write-Output "No images to delete"
         }
         ############################################################
         # END : Process images for deletion
