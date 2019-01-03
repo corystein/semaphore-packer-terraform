@@ -128,7 +128,9 @@ function main() {
             [Environment]::SetEnvironmentVariable("ARM_SUBSCRIPTION_ID", "", "Machine")
             [Environment]::SetEnvironmentVariable("ARM_TENANT_ID", "", "Machine")
         }
-        catch {}
+        catch {
+            # Do nothing
+        }
 
         <#
         if (-not($UseTfVarsFile)) {
