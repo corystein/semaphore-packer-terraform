@@ -31,7 +31,7 @@ jobs:
           no_output_timeout: 30m
       - run:
           name: AZ login
-          command: az login --service-principal -u "$ARM_CLIENT_ID" -p "$ARM_CLIENT_SECRET"" --tenant "$ARM_TENANT_ID" --subscription "$ARM_SUBSCRIPTION_ID"
+          command: az login --service-principal -u "$ARM_CLIENT_ID" -p "$ARM_CLIENT_SECRET" --tenant "$ARM_TENANT_ID" --subscription "$ARM_SUBSCRIPTION_ID"
       - run:
           name: Clean Up Packer
           command: pwsh --version
