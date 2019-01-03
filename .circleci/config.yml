@@ -34,7 +34,7 @@ jobs:
           command: az login --service-principal -u "$ARM_CLIENT_ID" -p "$ARM_CLIENT_SECRET" --tenant "$ARM_TENANT_ID" --subscription "$ARM_SUBSCRIPTION_ID"
       - run:
           name: Clean Up Packer
-          command: pwsh --version
+          command: pwsh -Command ./packer/image-cleanup.ps1 -SubscriptionId "$ARM_SUBSCRIPTION_ID" -ResourceGroup "$RESOURCE_GROUP_NAME"
           no_output_timeout: 30m
 workflows:
   version: 2

@@ -7,7 +7,7 @@
 .OUTPUTS
 
 .EXAMPLE
-    # Build using variables file
+    # Remove images
     ./image-cleanup.ps1 
 
 
@@ -28,7 +28,9 @@
 
 param(
     [string] $SubscriptionId,
-    [string] $ResourceGroup = "PZI-GXUS-G-RGP-PADM-P001"
+    [string] $ResourceGroup = "PZI-GXUS-G-RGP-PADM-P001",
+    [int] $DaysToDelete = 7,
+    [switch] $KeepOnlyLatest
 )
 
 ###################################################################################
@@ -56,54 +58,91 @@ if ([String]::IsNullOrWhiteSpace($(Get-Command az -ErrorAction SilentlyContinue 
 function main() {
     try {
 
+        # Get subscription id from current token/session
         if ([String]::IsNullOrWhiteSpace($SubscriptionId)) {
             $azureRmContext = $(az account show) | ConvertFrom-Json
             $SubscriptionId = $azureRmContext.id
         }
-        #Write-Output "Subscription Id: .................... [$($SubscriptionId)]"    
+
+        # Get list of images from resource group
         $result = az image list --resource-group $ResourceGroup --subscription "$($SubscriptionId)" | ConvertFrom-Json
 
+        # Enumerate through list
+        $objectCollection = @()
         if ($result.Count -gt 0) {
-            [int]$Deleted = 0
             $result | ForEach-Object {
+                #$_
 
-                $StartDate = (GET-DATE)
-
+                # Create object
+                $object = New-Object PSObject
+                Add-Member -InputObject $object -MemberType NoteProperty -Name Name -Value ""
+                Add-Member -InputObject $object -MemberType NoteProperty -Name DateCreated -Value ""
+                
+                ######################################
+                # START : Construct Date
+                ######################################
                 $EndDate = $_.tags.create_time
-                Write-Verbose "Start Date: [$StartDate]"
-                Write-Verbose "End Date: [$EndDate]"
-
-                #$EndDate
                 $EndDateParts = $EndDate.Split("-")
-                #$EndDateParts
                 $EndDateParts2 = $EndDateParts[2].Split("T")
-                #$EndDateParts2
-                $EndDatePart = "{0}/{1}/{2}" -f $EndDateParts[1], $EndDateParts2[0], $EndDateParts[0]
+                $Hour = $EndDateParts2[1].Substring(0, 2)
+                $Minute = $EndDateParts2[1].Substring(2, 2)
+                $HourMinute = "{0}:{1}" -f $Hour, $Minute
+                $EndDateTime = "{0:hh:mm tt}" -f [datetime]$HourMinute
+                $EndDatePart = [datetime]$("{0}/{1}/{2} {3}" -f $EndDateParts[1], $EndDateParts2[0], $EndDateParts[0], $EndDateTime)
+                ######################################
+                # END : Construct Date
+                ######################################
 
-                $EndDatePart = [datetime]::parseexact($EndDatePart, 'MM/dd/yyyy', $null).ToString('MM/dd/yyyy')
+                # Add value to properties
+                $object.Name = $_.name
+                $object.DateCreated = $EndDatePart
 
+                # Add object to collection
+                $objectCollection += $object
+            }
+        }
+
+
+        # Get most recent image
+        #Write-Output "`r`nLatest"
+        $LatestImage = $($objectCollection | Sort-Object DateCreated | Select-Object -Last 1 | Select-Object -Property Name).Name
+        #"Name: [{0}]" -f $LatestImage
+
+        ############################################################
+        # START : Process images for deletion
+        ############################################################
+        [int]$Deleted = 0
+        $StartDate = (GET-DATE)
+
+        if ($KeepOnlyLatest) {
+            Write-Verbose "Deleting all images except latest"
+            $objectCollection | Where-Object { $_.Name -ne $LatestImage } | ForEach-Object {
+                az image delete --name "$($_.name)" --resource-group $ResourceGroup --subscription "$($SubscriptionId)"
+                $Deleted++
+            }
+        }
+        else {
+            Write-Verbose "Deleting images older than days specified"
+            $objectCollection | ForEach-Object {
                 $ts = New-TimeSpan –Start $StartDate –End $EndDatePart
-                #$ts.Days
-
-                if ($ts.Days -le -7) {
-                    Write-Warning "Image older than 7 days"
+                if ($ts.Days -le ($DaysToDelete * -1)) {
+                    Write-Warning "Image older than $DaysToDelete day(s)"
                     Write-Output "Deleting [$($_.name)]..."
                     az image delete --name "$($_.name)" --resource-group $ResourceGroup --subscription "$($SubscriptionId)"
                     $Deleted++
                 }
-
-                if ($Deleted -gt 0) {
-                    Write-Warning "Deleted [$Deleted] images"
-                    Write-Output "Completed deleting images"
-                } 
-
-                #$_.name
-            }
-            
-            if ($Deleted -eq 0) {
-                Write-Output "No images to delete"
             }
         }
+
+        # Display number of images deleted
+        if ($Deleted -gt 0) {
+            Write-Warning "Deleted [$Deleted] images"
+            Write-Output "Completed deleting images"
+        }
+        ############################################################
+        # END : Process images for deletion
+        ############################################################
+
 
     }
     catch {

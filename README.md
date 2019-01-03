@@ -7,14 +7,17 @@
 
 - [Releases](https://github.com/corystein/semaphore-packer-terraform/releases)
 - [Ansible Semaphore](https://github.com/ansible-semaphore/semaphore)
+- [Packer](https://packer.io)
+- [Terraform](https://terraform.io)
+- [Azure](https://portal.azure.com)
 
 ## Introduction
 
-This project includes script to deploy Ansible Semaphore using Packer and Terraform. Packer script deploys the latest Ansible Semaphore into a single VM image.
+This project includes scripts to deploy [Ansible Semaphore](https://github.com/ansible-semaphore/semaphore) using [Packer](https://packer.io) and [Terraform](https://terraform.io). Packer script deploys the latest Ansible Semaphore into a single VM image.
 
 ## Packer Image
 
-- Provider: Azure
+- Provider: [Azure](https://portal.azure.com)
 - OS: Linux CentOS 7.5
 - Ansible Semaphore: v2.5.1
 
