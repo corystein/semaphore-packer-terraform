@@ -54,6 +54,66 @@ if ([String]::IsNullOrWhiteSpace($(Get-Command az -ErrorAction SilentlyContinue 
 ###################################################################################
 # BEGIN : FUNCTIONS
 ###################################################################################
+function Get-PackerImages {
+    param(
+        $SubscriptionId,
+        $ResourceGroupName
+    )
+
+    Process {
+        # Get list of images from resource group
+        $result = az image list --resource-group $ResourceGroup --subscription "$($SubscriptionId)" | ConvertFrom-Json
+
+
+        # Enumerate through list
+        $objectCollection = @()
+        if ($result.Count -gt 0) {
+            $result | ForEach-Object {
+                #$_
+
+                # Create object
+                $object = New-Object PSObject
+                Add-Member -InputObject $object -MemberType NoteProperty -Name Name -Value ""
+                Add-Member -InputObject $object -MemberType NoteProperty -Name DateCreated -Value ""
+                
+                ######################################
+                # START : Construct Date
+                ######################################
+                $EndDate = $_.tags.create_time
+                $EndDateParts = $EndDate.Split("-")
+                $EndDateParts2 = $EndDateParts[2].Split("T")
+                $Hour = $EndDateParts2[1].Substring(0, 2)
+                $Minute = $EndDateParts2[1].Substring(2, 2)
+                $HourMinute = "{0}:{1}" -f $Hour, $Minute
+                $EndDateTime = "{0:hh:mm tt}" -f [datetime]$HourMinute
+                $EndDatePart = [datetime]$("{0}/{1}/{2} {3}" -f $EndDateParts[1], $EndDateParts2[0], $EndDateParts[0], $EndDateTime)
+                ######################################
+                # END : Construct Date
+                ######################################
+
+                # Add value to properties
+                $object.Name = $_.name
+                $object.DateCreated = $EndDatePart
+
+                # Add object to collection
+                $objectCollection += $object
+            }
+        }
+
+        return $objectCollection
+
+    }
+}
+
+function Get-LatestPackerImage {
+    param(
+        $imageList
+    )
+
+    Process {
+        return $($imageList | Sort-Object DateCreated | Select-Object -Last 1 | Select-Object -Property Name).Name
+    }
+}
 
 function main() {
     try {
@@ -73,6 +133,7 @@ function main() {
         Write-Output "Keep Only Latest: ........................ [$($KeepOnlyLatest)]" 
         ###################################################################
 
+        <#
         # Get list of images from resource group
         $result = az image list --resource-group $ResourceGroup --subscription "$($SubscriptionId)" | ConvertFrom-Json
 
@@ -110,12 +171,13 @@ function main() {
                 $objectCollection += $object
             }
         }
+        #>
 
+        $packerImages = Get-PackerImages -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroup
 
         # Get most recent image
-        #Write-Output "`r`nLatest"
-        $LatestImage = $($objectCollection | Sort-Object DateCreated | Select-Object -Last 1 | Select-Object -Property Name).Name
-        #"Name: [{0}]" -f $LatestImage
+        #$LatestImage = $($objectCollection | Sort-Object DateCreated | Select-Object -Last 1 | Select-Object -Property Name).Name
+        $LatestImage = Get-LatestPackerImage -imageList $packerImages
 
         ############################################################
         # START : Process images for deletion
@@ -125,18 +187,19 @@ function main() {
 
         if ($KeepOnlyLatest) {
             Write-Verbose "Deleting all images except latest"
-            $objectCollection | Where-Object { $_.Name -ne $LatestImage } | ForEach-Object {
+            $packerImages | Where-Object { $_.Name -ne $LatestImage } | ForEach-Object {
+                Write-Ouptut "Deleting image [$($_.name)]..."
                 az image delete --name "$($_.name)" --resource-group $ResourceGroup --subscription "$($SubscriptionId)"
                 $Deleted++
             }
         }
         else {
             Write-Verbose "Deleting images older than days specified"
-            $objectCollection | ForEach-Object {
+            $packerImages | ForEach-Object {
                 $ts = New-TimeSpan –Start $StartDate –End $EndDatePart
                 if ($ts.Days -le ($DaysToDelete * -1)) {
                     Write-Warning "Image older than $DaysToDelete day(s)"
-                    Write-Output "Deleting [$($_.name)]..."
+                    Write-Output "Deleting image [$($_.name)]..."
                     az image delete --name "$($_.name)" --resource-group $ResourceGroup --subscription "$($SubscriptionId)"
                     $Deleted++
                 }
@@ -154,7 +217,6 @@ function main() {
         ############################################################
         # END : Process images for deletion
         ############################################################
-
 
     }
     catch {
