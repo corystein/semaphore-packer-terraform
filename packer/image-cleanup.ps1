@@ -1,6 +1,6 @@
 <#
 .DESCRIPTION
-    This script aids in deleting images using the Azure CLI
+    This script aids in retrieving and deleting images using the Azure CLI
 
 .INPUTS
 
@@ -107,7 +107,8 @@ function Get-PackerImages {
 
 function Get-LatestPackerImage {
     param(
-        $imageList
+        $imageList,
+        $pattern
     )
 
     Process {
@@ -125,7 +126,7 @@ function main() {
         }
 
         ###################################################################
-        # Input Values
+        # Display Parameter Values
         ###################################################################
         Write-Output "Subscription Id: ......................... [$($SubscriptionId)]"
         Write-Output "Resource Group Name: ..................... [$($ResourceGroup)]"
@@ -188,7 +189,7 @@ function main() {
         if ($KeepOnlyLatest) {
             Write-Verbose "Deleting all images except latest"
             $packerImages | Where-Object { $_.Name -ne $LatestImage } | ForEach-Object {
-                Write-Ouptut "Deleting image [$($_.name)]..."
+                Write-Output "Deleting image [$($_.name)]..."
                 az image delete --name "$($_.name)" --resource-group $ResourceGroup --subscription "$($SubscriptionId)"
                 $Deleted++
             }
