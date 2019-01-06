@@ -192,6 +192,7 @@ function main() {
                 Write-Output "Deleting image [$($_.name)]..."
                 az image delete --name "$($_.name)" --resource-group $ResourceGroup --subscription "$($SubscriptionId)"
                 $Deleted++
+                Write-Output "Successfully deleted image"
             }
         }
         else {
@@ -203,6 +204,7 @@ function main() {
                     Write-Output "Deleting image [$($_.name)]..."
                     az image delete --name "$($_.name)" --resource-group $ResourceGroup --subscription "$($SubscriptionId)"
                     $Deleted++
+                    Write-Output "Successfully deleted image"
                 }
             }
         }
