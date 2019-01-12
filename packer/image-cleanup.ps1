@@ -136,6 +136,7 @@ function main() {
         Write-Output "Resource Group Name: ..................... [$($ResourceGroup)]"
         Write-Output "Days To Delete: .......................... [$($DaysToDelete)]"
         Write-Output "Keep Only Latest: ........................ [$($KeepOnlyLatest)]" 
+        Write-Output "Pattern: ................................. [$($ImagePattern)]" 
         ###################################################################
 
         <#
